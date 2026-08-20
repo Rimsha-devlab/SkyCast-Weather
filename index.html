@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="SkyCast - Premium Live Weather Dashboard with dynamic backgrounds, recent search history, and GPS location.">
+  <title>SkyCast - Live Weather Dashboard</title>
+
+  <!-- Google Fonts: Outfit & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Custom CSS Styles -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-weather="default" data-time="day">
+
+  <!-- Background Animated Ambient Orbs (Change dynamically based on weather) -->
+  <div class="bg-blur-circle circle-1"></div>
+  <div class="bg-blur-circle circle-2"></div>
+
+  <!-- Full-screen Weather Ambient Effects (Rain & Floating Clouds) -->
+  <div id="weather-effects" class="weather-effects" aria-hidden="true">
+    <div id="rain-layer" class="rain-layer"></div>
+    <div class="cloud-layer">
+      <span class="floating-cloud cloud-a"></span>
+      <span class="floating-cloud cloud-b"></span>
+      <span class="floating-cloud cloud-c"></span>
+      <span class="floating-cloud cloud-d"></span>
+    </div>
+  </div>
+
+  <!-- Main App Wrapper -->
+  <div class="app-container">
+
+    <!-- Header Section -->
+    <header class="app-header">
+      <div class="brand-block">
+        <div class="logo">
+          <i class="fa-solid fa-cloud-sun-rain"></i>
+          <span>SkyCast</span>
+        </div>
+        <p class="app-subtitle">Live weather insights, clearly delivered</p>
+      </div>
+    </header>
+
+    <!-- Search Section -->
+    <section class="search-section">
+      <form id="search-form" class="search-form" autocomplete="off">
+        <div class="search-row">
+          <div class="input-group">
+            <i class="fa-solid fa-location-dot search-icon"></i>
+            <input 
+              type="text" 
+              id="city-input" 
+              placeholder="Search city (e.g., London, Tokyo, New York)..." 
+              aria-label="City Name Input"
+              required
+            >
+            <button type="button" id="clear-btn" class="clear-btn hidden" aria-label="Clear input">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <button type="submit" id="search-btn" class="search-btn">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <span>Search</span>
+          </button>
+        </div>
+
+        <!-- Use My Location -->
+        <button type="button" id="location-btn" class="use-location-btn" aria-label="Use My Location">
+          <i class="fa-solid fa-location-crosshairs location-btn-icon"></i>
+          <span class="location-btn-label">Use My Location</span>
+          <span class="location-btn-loading hidden">
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            Locating...
+          </span>
+        </button>
+      </form>
+
+      <!-- Recent Searches Container (Saved via localStorage) -->
+      <div id="recent-searches-container" class="recent-searches-container">
+        <div class="recent-header">
+          <span id="recent-title" class="quick-title"><i class="fa-solid fa-clock-rotate-left"></i> Recent Searches:</span>
+          <button type="button" id="clear-history-btn" class="clear-history-btn hidden">Clear</button>
+        </div>
+        <p id="recent-empty-hint" class="recent-empty-hint hidden">Search a city to build your history.</p>
+        <div id="recent-pills" class="quick-cities">
+          <!-- Dynamic Pills render here -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Status Messages (Loading & Error States) -->
+    <div id="status-container" class="status-container hidden">
+      <!-- Loading State -->
+      <div id="loading-state" class="loading-state hidden">
+        <div class="spinner"></div>
+        <p>Fetching real-time weather...</p>
+      </div>
+
+      <!-- Error State -->
+      <div id="error-state" class="error-state hidden">
+        <i class="fa-solid fa-circle-exclamation error-icon"></i>
+        <p id="error-message">City not found. Please check spelling and try again.</p>
+      </div>
+    </div>
+
+    <!-- Main Weather Dashboard Card -->
+    <main id="weather-card" class="weather-card hidden">
+
+      <!-- Header Info: Location & Date -->
+      <div class="weather-card-header">
+        <div class="location-info">
+          <h2 id="city-name">London, GB</h2>
+          <div class="location-meta">
+            <p id="date-time">Thursday, 12:00 PM</p>
+            <span id="day-night-badge" class="day-night-badge" data-period="day">
+              <i class="fa-solid fa-sun badge-icon"></i>
+              <span class="badge-text">Daytime</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Temperature Unit Switcher (°C / °F) -->
+        <div class="unit-toggle-container">
+          <button id="unit-c" class="unit-btn active" title="Display in Celsius">°C</button>
+          <span class="unit-divider">|</span>
+          <button id="unit-f" class="unit-btn" title="Display in Fahrenheit">°F</button>
+        </div>
+      </div>
+
+      <!-- Hero Weather Display -->
+      <div class="hero-weather">
+        <div id="weather-icon-wrapper" class="weather-icon-wrapper" data-icon-type="default">
+          <div class="icon-fx sun-glow" aria-hidden="true"></div>
+          <div class="icon-fx sun-rays" aria-hidden="true"></div>
+          <div id="icon-rain-ring" class="icon-fx icon-rain-ring" aria-hidden="true"></div>
+          <img id="weather-icon" class="weather-icon-img" src="https://openweathermap.org/img/wn/10d@4x.png" alt="Weather condition icon">
+        </div>
+        <div class="temp-display">
+          <h1 id="temperature">22</h1>
+          <span id="temp-unit-symbol" class="temp-unit">°C</span>
+        </div>
+        <div class="condition-info">
+          <p id="weather-condition">Light Rain</p>
+          <div class="min-max-temp">
+            <span>High: <strong id="temp-max">24°C</strong></span>
+            <span class="dot">•</span>
+            <span>Low: <strong id="temp-min">18°C</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Weather Metrics Grid -->
+      <div class="metrics-grid">
+
+        <!-- Feels Like -->
+        <div class="metric-card">
+          <div class="metric-icon">
+            <i class="fa-solid fa-temperature-three-quarters"></i>
+          </div>
+          <div class="metric-info">
+            <span class="metric-label">Feels Like</span>
+            <span id="feels-like" class="metric-value">21°C</span>
+          </div>
+        </div>
+
+        <!-- Humidity -->
+        <div class="metric-card">
+          <div class="metric-icon">
+            <i class="fa-solid fa-droplet"></i>
+          </div>
+          <div class="metric-info">
+            <span class="metric-label">Humidity</span>
+            <span id="humidity" class="metric-value">68%</span>
+          </div>
+        </div>
+
+        <!-- Wind Speed -->
+        <div class="metric-card">
+          <div class="metric-icon">
+            <i class="fa-solid fa-wind"></i>
+          </div>
+          <div class="metric-info">
+            <span class="metric-label">Wind Speed</span>
+            <span id="wind-speed" class="metric-value">12.5 km/h</span>
+          </div>
+        </div>
+
+        <!-- Atmospheric Pressure -->
+        <div class="metric-card">
+          <div class="metric-icon">
+            <i class="fa-solid fa-gauge-high"></i>
+          </div>
+          <div class="metric-info">
+            <span class="metric-label">Pressure</span>
+            <span id="pressure" class="metric-value">1015 hPa</span>
+          </div>
+        </div>
+
+      </div>
+
+        <!-- Footer Text Inside Card -->
+        <p class="footer-title" style="text-align:center; margin-top:12px;">Live Weather Data • Modern Forecast Experience</p>
+      </main>
+
+      <!-- Footer (empty) -->
+      <footer class="app-footer"></footer>
+
+  </div>
+
+  <!-- JavaScript File -->
+  <script src="script.js"></script>
+</body>
+</html>
