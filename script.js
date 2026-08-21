@@ -13,11 +13,8 @@
 // 1. API Configuration & Constants
 // --------------------------------------------------------------------------
 // Replace this with your actual Render URL after deployment!
-const BACKEND_URL = "https://your-app-name.onrender.com"; 
+const WEATHER_API_BASE_URL = "YOUR_DEPLOYED_BACKEND_URL"; 
 
-const WEATHER_API_ENDPOINT = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
-  ? "/api/weather"
-  : `${BACKEND_URL}/api/weather`;
 const LOCAL_STORAGE_KEY = "skycast_recent_searches";
 const LAST_CITY_KEY = "skycast_last_city";
 const MAX_RECENT_SEARCHES = 5;
@@ -453,8 +450,8 @@ async function fetchWeatherByCity(city) {
 
   try {
     await showLoading();
-    // Construct a relative API URL to work both when served via HTTP server or opened directly as a file.
-    const apiUrl = `${WEATHER_API_ENDPOINT}?city=${encodeURIComponent(city)}`;
+    // Construct API URL
+    const apiUrl = `${WEATHER_API_BASE_URL}/api/weather?city=${encodeURIComponent(city)}`;
     await executeWeatherFetch(apiUrl, city);
   } finally {
     isFetching = false;
@@ -480,8 +477,8 @@ async function handleGeolocation() {
     async (position) => {
       const lat = position.coords.latitude;
       const lon = position.coords.longitude;
-      // Construct a relative API URL for geolocation queries.
-      const apiUrl = `${WEATHER_API_ENDPOINT}?lat=${lat}&lon=${lon}`;
+      // Construct API URL for geolocation queries.
+      const apiUrl = `${WEATHER_API_BASE_URL}/api/weather?lat=${lat}&lon=${lon}`;
       await executeWeatherFetch(apiUrl, "", { fromGeolocation: true });
       setLocationButtonLoading(false);
       isFetching = false;

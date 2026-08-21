@@ -10,7 +10,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const port = process.env.PORT || 10000;
+const port = process.env.PORT || 3000;
 const apiKey = process.env.OPENWEATHER_API_KEY;
 
 // Allow CORS from GitHub Pages
@@ -20,6 +20,10 @@ app.use(cors({
 }));
 
 app.use(express.static(__dirname));
+
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok' });
+});
 
 app.get('/api/weather', async (req, res) => {
   const { city, lat, lon } = req.query;
